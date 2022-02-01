@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/html">
+<%c++
+auto field=@@.get<std::vector<std::string>>("field");
+%>
+<head>
+    <meta charset="UTF-32">
+    <title>Life Game</title>
+    <style>
+        p {
+            line-height: 0;
+            letter-spacing: 0.7em;
+            position: relative;
+            text-align: center;
+            font-family: monospace;
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body>
+<div id="content">
+    <%c++ for(auto& str : field){%>
+    <p><%c++ $$ << str; %></p>
+    <%c++}%>
+</div>
+<script>
+    function loadDoc() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(this.responseText, "text/html");
+
+                document.getElementById("content").innerHTML =
+                    doc.getElementById("content").innerHTML;
+            }
+        };
+        xhttp.open("GET", "/refresh", true);
+        xhttp.send();
+
+        autoReload();
+    }
+
+    function autoReload()
+    {
+        setTimeout(loadDoc, 500);
+    }
+
+    autoReload();
+</script>
+<script>
+    function download(type) {
+        var file = new Blob([document.getElementById("content").innerText], {type: type});
+        if (window.navigator.msSaveOrOpenBlob) // IE10+
+            window.navigator.msSaveOrOpenBlob(file, "dump.txt");
+        else { // Others
+            var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+            a.href = url;
+            a.download = "dump.txt";
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function() {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 0);
+        }
+    }
+</script>
+<button type="button" onclick="download('text/plain')">Save</button>
+</body>
+</html>
